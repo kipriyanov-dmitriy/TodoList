@@ -1,0 +1,54 @@
+### Gradle ###
+.gradle/
+build/
+*/build/
+
+# Gradle Wrapper
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Local Gradle properties
+local.properties
+
+### Android Studio / IntelliJ IDEA ###
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# AS / IntelliJ caches
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+
+# Editor-based HTTP requests
+.idea/httpRequests/
+
+### Kotlin Symbol Processing (KSP) ###
+build/generated/ksp/
+
+### Android / Java ###
+*.apk
+*.ap_
+*.dex
+*.class
+*.jar
+*.war
+*.ear
+
+# Keystore files (не хранить в гите!)
+*.jks
+*.keystore
+
+# Log files
+*.log
+
+### OS generated files ###
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
