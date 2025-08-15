@@ -27,25 +27,18 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Release APK
+        env:
+          SIGNING_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: ./gradlew assembleRelease
 
-      - name: Send APK to Telegram (you)
+      - name: Send APK to Telegram
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID_1: ${{ secrets.TELEGRAM_CHAT_ID_1 }}
+          CHAT_ID_2: ${{ secrets.TELEGRAM_CHAT_ID_2 }}
         run: |
-          curl -F chat_id=$CHAT_ID_1 \
-               -F document=@app/build/outputs/apk/release/app-release.apk \
-               "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendDocument"
-
-      - name: Send APK to Telegram (friend)
-        run: |
-          curl -F chat_id=$CHAT_ID_2 \
-               -F document=@app/build/outputs/apk/release/app-release.apk \
-               "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendDocument"
-
-    env:
-      SIGNING_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE }}
-      SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
-      SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-      SIGNING_KEYSTORE_PASSWORD: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
-      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      CHAT_ID_1: ${{ secrets.CHAT_ID_1 }}
-      CHAT_ID_2: ${{ secrets.CHAT_ID_2 }}
+          APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          curl -F chat_id=$CHAT_ID_1 -F document=@"$APK_PATH" "https://api.telegram.org/bot$BOT_TOKEN/sendDocument"
+          curl -F chat_id=$CHAT_ID_2 -F document=@"$APK_PATH" "https://api.telegram.org/bot$BOT_TOKEN/sendDocument"
