@@ -21,14 +21,17 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          echo "$SIGNING_KEYSTORE" | base64 --decode > my-release-key.jks
+          echo "$SIGNING_KEYSTORE" | base64 --decode > ./app/release-keystore.jks
+          echo "RELEASE_KEYSTORE_PATH=./app/release-keystore.jks" >> $GITHUB_ENV
+        env:
+          SIGNING_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Build Release APK
         env:
-          SIGNING_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE }}
+          RELEASE_KEYSTORE_PATH: ${{ env.RELEASE_KEYSTORE_PATH }}
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: ./gradlew assembleRelease

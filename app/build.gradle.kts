@@ -22,8 +22,8 @@ android {
 
     signingConfigs {
         create("release") {
-            val keystorePath = System.getenv("SIGNING_KEYSTORE")
-            if (keystorePath != null) {
+            val keystorePath = System.getenv("RELEASE_KEYSTORE_PATH")
+            if (keystorePath != null && file(keystorePath).exists()) {
                 println("Using CI signing config")
                 storeFile = file(keystorePath)
                 storePassword = System.getenv("SIGNING_KEY_PASSWORD")
