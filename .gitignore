@@ -10,6 +10,10 @@ build/
 # Local Gradle properties
 local.properties
 
+# other
+my-release-key.jks.base64
+telegramm_bot.txt
+
 ### Android Studio / IntelliJ IDEA ###
 .idea/
 *.iml

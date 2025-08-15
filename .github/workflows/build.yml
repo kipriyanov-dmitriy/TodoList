@@ -1,0 +1,48 @@
+name: Build and Send APK to Telegram
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Decode Keystore
+        run: |
+          echo "$SIGNING_KEYSTORE" | base64 --decode > my-release-key.jks
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease
+
+      - name: Send APK to Telegram (you)
+        run: |
+          curl -F chat_id=$CHAT_ID_1 \
+               -F document=@app/build/outputs/apk/release/app-release.apk \
+               "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendDocument"
+
+      - name: Send APK to Telegram (friend)
+        run: |
+          curl -F chat_id=$CHAT_ID_2 \
+               -F document=@app/build/outputs/apk/release/app-release.apk \
+               "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendDocument"
+
+    env:
+      SIGNING_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE }}
+      SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+      SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+      SIGNING_KEYSTORE_PASSWORD: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      CHAT_ID_1: ${{ secrets.CHAT_ID_1 }}
+      CHAT_ID_2: ${{ secrets.CHAT_ID_2 }}
