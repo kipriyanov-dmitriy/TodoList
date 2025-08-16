@@ -23,12 +23,16 @@ android {
     signingConfigs {
         create("release") {
             val keystorePath = System.getenv("RELEASE_KEYSTORE_PATH")
-            if (keystorePath != null && file(keystorePath).exists()) {
+            val localStorePassword = System.getenv("SIGNING_STORE_PASSWORD")
+            val localKeyAlias = System.getenv("SIGNING_KEY_ALIAS")
+            val localKeyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+            
+            if (keystorePath != null && localStorePassword != null && localKeyAlias != null && localKeyPassword != null) {
                 println("Using CI signing config")
                 storeFile = file(keystorePath)
-                storePassword = System.getenv("SIGNING_KEY_PASSWORD")
-                keyAlias = System.getenv("SIGNING_KEY_ALIAS")
-                keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+                storePassword = localStorePassword
+                keyAlias = localKeyAlias
+                keyPassword = localKeyPassword
             } else {
                 println("Using local signing config")
                 storeFile = file("my-release-key.jks")

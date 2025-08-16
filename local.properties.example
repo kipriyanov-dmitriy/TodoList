@@ -1,0 +1,16 @@
+# Пример файла local.properties для локальной разработки
+# Скопируйте этот файл в local.properties и настройте под свои нужды
+
+# Путь к Android SDK (замените на свой)
+sdk.dir=C\:\\Users\\YourUsername\\AppData\\Local\\Android\\Sdk
+
+# Путь к keystore для локальной подписи (опционально)
+# release.keystore.path=app/my-release-key.jks
+# release.keystore.password=your_password
+# release.key.alias=your_alias
+# release.key.password=your_password
+
+# Настройки для локальной сборки
+# org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+# org.gradle.parallel=true
+# org.gradle.caching=true
