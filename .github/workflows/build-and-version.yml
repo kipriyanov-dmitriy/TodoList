@@ -29,10 +29,18 @@ jobs:
 
       - name: Decode Keystore
         run: |
+          echo "=== KEYSTORE DECODING DEBUG ==="
+          echo "Current directory: $(pwd)"
+          echo "Directory contents before decoding:"
+          ls -la
+          echo "Decoding keystore..."
           echo "$SIGNING_KEYSTORE" | base64 --decode > release-keystore.jks
           echo "Keystore decoded to: release-keystore.jks"
+          echo "Directory contents after decoding:"
           ls -la
           echo "File size: $(wc -c < release-keystore.jks) bytes"
+          echo "Keystore file exists: $(test -f release-keystore.jks && echo "YES" || echo "NO")"
+          echo "=== END KEYSTORE DECODING DEBUG ==="
         env:
           SIGNING_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE }}
 
@@ -46,8 +54,18 @@ jobs:
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
         run: |
+          echo "=== BUILD DEBUG ==="
+          echo "Current directory: $(pwd)"
           echo "Building with keystore path: $RELEASE_KEYSTORE_PATH"
+          echo "Environment variables:"
+          echo "RELEASE_KEYSTORE_PATH: $RELEASE_KEYSTORE_PATH"
+          echo "SIGNING_KEY_ALIAS: $SIGNING_KEY_ALIAS"
+          echo "SIGNING_KEY_PASSWORD: [SET]"
+          echo "SIGNING_STORE_PASSWORD: [SET]"
+          echo "Directory contents:"
           ls -la
+          echo "Keystore file exists: $(test -f $RELEASE_KEYSTORE_PATH && echo "YES" || echo "NO")"
+          echo "=== STARTING GRADLE BUILD ==="
           ./gradlew assembleRelease
 
       - name: Find APK

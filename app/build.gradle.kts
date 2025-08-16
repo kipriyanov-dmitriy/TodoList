@@ -23,23 +23,36 @@ android {
     signingConfigs {
         create("release") {
             val keystorePath = System.getenv("RELEASE_KEYSTORE_PATH")
-            val localStorePassword = System.getenv("SIGNING_STORE_PASSWORD")
-            val localKeyAlias = System.getenv("SIGNING_KEY_ALIAS")
-            val localKeyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+            val envStorePassword = System.getenv("SIGNING_STORE_PASSWORD")
+            val envKeyAlias = System.getenv("SIGNING_KEY_ALIAS")
+            val envKeyPassword = System.getenv("SIGNING_KEY_PASSWORD")
             
-            if (keystorePath != null && localStorePassword != null && localKeyAlias != null && localKeyPassword != null) {
+            println("=== SIGNING CONFIG DEBUG ===")
+            println("RELEASE_KEYSTORE_PATH: $keystorePath")
+            println("SIGNING_STORE_PASSWORD: ${if (envStorePassword != null) "[SET]" else "[NOT SET]"}")
+            println("SIGNING_KEY_ALIAS: $envKeyAlias")
+            println("SIGNING_KEY_PASSWORD: ${if (envKeyPassword != null) "[SET]" else "[NOT SET]"}")
+            
+            if (keystorePath != null && envStorePassword != null && envKeyAlias != null && envKeyPassword != null) {
+                val keystoreFile = file(keystorePath)
                 println("Using CI signing config with keystore: $keystorePath")
-                storeFile = file(keystorePath)
-                storePassword = localStorePassword
-                keyAlias = localKeyAlias
-                keyPassword = localKeyPassword
+                println("Keystore file exists: ${keystoreFile.exists()}")
+                println("Keystore file absolute path: ${keystoreFile.absolutePath}")
+                storeFile = keystoreFile
+                storePassword = envStorePassword
+                keyAlias = envKeyAlias
+                keyPassword = envKeyPassword
             } else {
                 println("Using local signing config")
-                storeFile = file("my-release-key.jks")
+                val localKeystore = file("my-release-key.jks")
+                println("Local keystore exists: ${localKeystore.exists()}")
+                println("Local keystore absolute path: ${localKeystore.absolutePath}")
+                storeFile = localKeystore
                 storePassword = "local_password"
                 keyAlias = "local_alias"
                 keyPassword = "local_password"
             }
+            println("=== END SIGNING CONFIG DEBUG ===")
         }
     }
 
