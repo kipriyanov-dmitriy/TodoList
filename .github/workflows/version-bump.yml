@@ -7,6 +7,7 @@ on:
     paths-ignore:
       - '**.md'
       - '.github/workflows/version-bump.yml'
+      - 'app/build.gradle.kts'
 
 jobs:
   version-bump:
@@ -58,11 +59,30 @@ jobs:
         run: |
           sed -i "s/versionName = \"${{ steps.current_version.outputs.current_version }}\"/versionName = \"${{ steps.new_version.outputs.new_version }}\"/" app/build.gradle.kts
           sed -i "s/versionCode = [0-9]*/versionCode = ${{ github.run_number }}/" app/build.gradle.kts
+          echo "Version updated in build.gradle.kts"
+
+      - name: Check if there are changes
+        id: check_changes
+        run: |
+          if git diff --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes to commit"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changes detected, will commit"
+          fi
 
       - name: Commit and push version bump
+        if: steps.check_changes.outputs.has_changes == 'true'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add app/build.gradle.kts
           git commit -m "Bump version to ${{ steps.new_version.outputs.new_version }} [skip ci]"
           git push origin main
+          echo "Version bumped and pushed successfully"
+
+      - name: Skip commit if no changes
+        if: steps.check_changes.outputs.has_changes == 'false'
+        run: |
+          echo "No version changes detected, skipping commit"

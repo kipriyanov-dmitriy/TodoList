@@ -36,7 +36,9 @@ jobs:
       - name: Decode Keystore
         run: |
           echo "$SIGNING_KEYSTORE" | base64 --decode > ./app/release-keystore.jks
-          echo "RELEASE_KEYSTORE_PATH=./app/release-keystore.jks" >> $GITHUB_ENV
+          echo "RELEASE_KEYSTORE_PATH=app/release-keystore.jks" >> $GITHUB_ENV
+          ls -la app/
+          echo "Keystore decoded successfully"
         env:
           SIGNING_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE }}
 
@@ -45,11 +47,14 @@ jobs:
 
       - name: Build Release APK
         env:
-          RELEASE_KEYSTORE_PATH: ./app/release-keystore.jks
+          RELEASE_KEYSTORE_PATH: app/release-keystore.jks
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
-        run: ./gradlew assembleRelease
+        run: |
+          echo "Building with keystore path: $RELEASE_KEYSTORE_PATH"
+          ls -la app/
+          ./gradlew assembleRelease
 
       - name: Find APK
         id: find_apk
