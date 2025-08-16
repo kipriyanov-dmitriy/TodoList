@@ -28,20 +28,11 @@ android {
             val localKeyPassword = System.getenv("SIGNING_KEY_PASSWORD")
             
             if (keystorePath != null && localStorePassword != null && localKeyAlias != null && localKeyPassword != null) {
-                val keystoreFile = file(keystorePath)
-                if (keystoreFile.exists()) {
-                    println("Using CI signing config with keystore: $keystorePath")
-                    storeFile = keystoreFile
-                    storePassword = localStorePassword
-                    keyAlias = localKeyAlias
-                    keyPassword = localKeyPassword
-                } else {
-                    println("CI keystore not found at: $keystorePath, falling back to local")
-                    storeFile = file("my-release-key.jks")
-                    storePassword = "local_password"
-                    keyAlias = "local_alias"
-                    keyPassword = "local_password"
-                }
+                println("Using CI signing config with keystore: $keystorePath")
+                storeFile = file(keystorePath)
+                storePassword = localStorePassword
+                keyAlias = localKeyAlias
+                keyPassword = localKeyPassword
             } else {
                 println("Using local signing config")
                 storeFile = file("my-release-key.jks")
