@@ -1,7 +1,10 @@
 # 🔍 Диагностика проблем с keystore
 
 ## Проблема
-Gradle все еще ищет keystore по пути `/home/runner/work/TodoList/TodoList/app/release-keystore.jks`
+Gradle ищет keystore по пути `/home/runner/work/TodoList/TodoList/app/release-keystore.jks`
+
+## Решение
+**Изменили подход:** Теперь keystore декодируется в папку `app/` как того требует Gradle.
 
 ## Что добавлено для диагностики
 
@@ -13,6 +16,7 @@ Gradle все еще ищет keystore по пути `/home/runner/work/TodoList
 ### 2. В `build-and-version.yml`
 - Логирование текущей директории
 - Проверка содержимого директории до и после декодирования
+- Проверка содержимого папки `app/`
 - Проверка существования файла keystore
 - Логирование всех переменных окружения
 
@@ -26,7 +30,7 @@ Gradle все еще ищет keystore по пути `/home/runner/work/TodoList
 2. Запустите workflow
 3. Проверьте логи на наличие:
    - `Current directory: /home/runner/work/TodoList/TodoList`
-   - `Keystore decoded to: release-keystore.jks`
+   - `Keystore decoded to: app/release-keystore.jks`
    - `Keystore file exists: YES`
 
 ### Шаг 2: Проверить основной workflow
@@ -44,23 +48,25 @@ Gradle все еще ищет keystore по пути `/home/runner/work/TodoList
 ```
 === KEYSTORE DECODING DEBUG ===
 Current directory: /home/runner/work/TodoList/TodoList
-Keystore decoded to: release-keystore.jks
+Keystore decoded to: app/release-keystore.jks
 Keystore file exists: YES
+App folder contents:
+-rw-r--r-- 1 runner docker 12345 release-keystore.jks
 ```
 
 #### В Gradle:
 ```
 === SIGNING CONFIG DEBUG ===
-RELEASE_KEYSTORE_PATH: release-keystore.jks
-Using CI signing config with keystore: release-keystore.jks
+RELEASE_KEYSTORE_PATH: app/release-keystore.jks
+Using CI signing config with keystore: app/release-keystore.jks
 Keystore file exists: true
-Keystore file absolute path: /home/runner/work/TodoList/TodoList/release-keystore.jks
+Keystore file absolute path: /home/runner/work/TodoList/TodoList/app/release-keystore.jks
 ```
 
 ## 🔧 Возможные проблемы
 
 ### 1. Неправильный путь в Gradle
-Если в логах Gradle все еще показывается путь с `/app/`, значит где-то в коде есть хардкод.
+Теперь keystore должен находиться в папке `app/` как того требует Gradle.
 
 ### 2. Кэширование
 Gradle может кэшировать старые настройки. Попробуйте:
@@ -76,22 +82,24 @@ Gradle может кэшировать старые настройки. Попр
 - `SIGNING_KEY_PASSWORD`
 - `SIGNING_STORE_PASSWORD`
 
-## Что должно быть в логах
+## 📋 Что должно быть в логах
 
 ### Успешная сборка:
 ```
 === KEYSTORE DECODING DEBUG ===
 Current directory: /home/runner/work/TodoList/TodoList
-Keystore decoded to: release-keystore.jks
+Keystore decoded to: app/release-keystore.jks
 Keystore file exists: YES
+App folder contents:
+-rw-r--r-- 1 runner docker 12345 release-keystore.jks
 
 === BUILD DEBUG ===
-Building with keystore path: release-keystore.jks
+Building with keystore path: app/release-keystore.jks
 Keystore file exists: YES
 
 === SIGNING CONFIG DEBUG ===
-RELEASE_KEYSTORE_PATH: release-keystore.jks
-Using CI signing config with keystore: release-keystore.jks
+RELEASE_KEYSTORE_PATH: app/release-keystore.jks
+Using CI signing config with keystore: app/release-keystore.jks
 Keystore file exists: true
 ```
 
@@ -99,3 +107,7 @@ Keystore file exists: true
 1. Проверьте все секреты
 2. Пересоздайте keystore в base64
 3. Очистите кэш GitHub Actions
+
+## 📂 Новые пути к keystore:
+- **Локально:** `my-release-key.jks` (в корневой папке проекта)
+- **CI/CD:** `app/release-keystore.jks` (декодируется в папку app/)
