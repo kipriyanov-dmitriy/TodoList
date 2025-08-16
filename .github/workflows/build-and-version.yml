@@ -69,6 +69,26 @@ jobs:
           echo "App folder contents:"
           ls -la app/
           echo "Keystore file exists: $(test -f app/$RELEASE_KEYSTORE_PATH && echo "YES" || echo "NO")"
+          
+          echo "=== KEYSTORE INFO ==="
+          echo "Keystore file size: $(wc -c < app/$RELEASE_KEYSTORE_PATH) bytes"
+          echo "Keystore permissions: $(ls -la app/$RELEASE_KEYSTORE_PATH)"
+          
+          echo "=== KEYSTORE CONTENTS ==="
+          echo "Checking keystore contents..."
+          if command -v keytool &> /dev/null; then
+            echo "Keytool found, listing keystore contents:"
+            keytool -list -keystore app/$RELEASE_KEYSTORE_PATH -storepass "$SIGNING_STORE_PASSWORD" 2>/dev/null || echo "Failed to list keystore contents"
+          else
+            echo "Keytool not found, cannot check keystore contents"
+          fi
+          
+          echo "=== ENVIRONMENT CHECK ==="
+          echo "RELEASE_KEYSTORE_PATH: '$RELEASE_KEYSTORE_PATH'"
+          echo "SIGNING_KEY_ALIAS: '$SIGNING_KEY_ALIAS'"
+          echo "SIGNING_KEY_PASSWORD: '${SIGNING_KEY_PASSWORD:0:3}...'"
+          echo "SIGNING_STORE_PASSWORD: '${SIGNING_STORE_PASSWORD:0:3}...'"
+          
           echo "=== STARTING GRADLE BUILD ==="
           ./gradlew assembleRelease
 
