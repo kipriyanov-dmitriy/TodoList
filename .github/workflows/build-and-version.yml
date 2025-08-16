@@ -2,6 +2,8 @@ name: Build APK and Version Bump
 
 on:
   push:
+    branches: [ main ]
+  workflow_dispatch:
     branches:
       - main
     paths-ignore:
