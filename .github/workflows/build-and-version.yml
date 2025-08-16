@@ -51,7 +51,7 @@ jobs:
 
       - name: Build Release APK
         env:
-          RELEASE_KEYSTORE_PATH: app/release-keystore.jks
+          RELEASE_KEYSTORE_PATH: release-keystore.jks
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
@@ -68,7 +68,7 @@ jobs:
           ls -la
           echo "App folder contents:"
           ls -la app/
-          echo "Keystore file exists: $(test -f $RELEASE_KEYSTORE_PATH && echo "YES" || echo "NO")"
+          echo "Keystore file exists: $(test -f app/$RELEASE_KEYSTORE_PATH && echo "YES" || echo "NO")"
           echo "=== STARTING GRADLE BUILD ==="
           ./gradlew assembleRelease
 
