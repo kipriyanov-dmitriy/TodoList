@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.todo.ui.theme.Green
 import com.example.todo.ui.theme.Green50
+import com.example.todo.ui.theme.Purple80
 import com.example.todo.ui.theme.Red
 import com.example.todo.ui.theme.Red50
 import com.example.todo.ui.theme.Yellow
@@ -28,9 +29,9 @@ enum class Priority(
     val lightColor: Color,
     val darkColor: Color
 ) {
-    High(Red50, Red),
-    Medium(Yellow50, Yellow),
     Low(Green50, Green),
+    Medium(Yellow50, Yellow),
+    High(Red50, Red),
 }
 
 @Composable
@@ -77,6 +78,12 @@ private fun PriorityChip(
         colors = InputChipDefaults.inputChipColors(
             containerColor = priority.lightColor,
             selectedContainerColor = priority.darkColor
+        ),
+        border = InputChipDefaults.inputChipBorder(
+            enabled = selected,
+            selected = !selected,
+            selectedBorderWidth = 4.dp,
+            borderColor = Color.White
         )
     )
 }
