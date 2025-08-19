@@ -1,6 +1,6 @@
 package com.example.todo.di
 
-import com.example.todo.ui.todo_list_screen.TodoListViewModel
+import com.example.todo.ui.todo_list_screens.TodoListViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 

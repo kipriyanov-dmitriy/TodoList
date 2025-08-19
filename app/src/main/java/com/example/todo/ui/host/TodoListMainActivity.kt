@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.todo.ui.theme.TodoTheme
-import com.example.todo.ui.todo_list_screen.TodoListScreen
+import com.example.todo.ui.navigation.TodoNavHost
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TodoTheme {
-                TodoListScreen()
+                TodoNavHost()
             }
         }
     }

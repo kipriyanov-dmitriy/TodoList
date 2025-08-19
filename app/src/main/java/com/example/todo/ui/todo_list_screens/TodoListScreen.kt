@@ -1,12 +1,9 @@
-package com.example.todo.ui.todo_list_screen
+package com.example.todo.ui.todo_list_screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -21,30 +18,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.example.todo.core.PreviewPhone
 import com.example.todo.ui.components.TodoTopAppBar
 import com.example.todo.ui.model.BottomTab
 import com.example.todo.ui.model.bottomTabs
-import com.example.todo.ui.navigation.ArchiveNavHost
-import com.example.todo.ui.navigation.BacklogNavHost
-import com.example.todo.ui.navigation.InProgressNavHost
 import com.example.todo.ui.theme.TodoTheme
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun TodoListScreen(
-
+    onAddNoteClick: () -> Unit
 ) {
     val viewModel: TodoListViewModel = koinViewModel()
 
-    TodoListContent()
+    TodoListContent(onAddNoteClick = onAddNoteClick)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TodoListContent(
-
+    onAddNoteClick: () -> Unit
 ) {
     var selectedTab by remember { mutableStateOf<BottomTab>(BottomTab.InProgress) }
 
@@ -70,9 +63,9 @@ private fun TodoListContent(
     ) { innerPadding ->
         Box(Modifier.padding(innerPadding)) {
             when (selectedTab) {
-                BottomTab.InProgress -> InProgressNavHost()
-                BottomTab.Backlog -> BacklogNavHost()
-                BottomTab.Archive -> ArchiveNavHost()
+                BottomTab.InProgress -> InProgressScreen()
+                BottomTab.Backlog -> BacklogScreen(onAddNoteClick = onAddNoteClick)
+                BottomTab.Archive -> ArchiveScreen()
             }
         }
     }
@@ -82,29 +75,6 @@ private fun TodoListContent(
 fun InProgressScreen() {
     Box(Modifier.fillMaxSize()) {
         Text("Экран В работе", modifier = Modifier.align(Alignment.Center))
-    }
-}
-
-@Composable
-fun BacklogScreen(onAddNoteClick: () -> Unit) {
-    Box(Modifier.fillMaxSize()) {
-        Text("Список бэклога", modifier = Modifier.align(Alignment.Center))
-
-        FloatingActionButton(
-            onClick = onAddNoteClick,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "Добавить")
-        }
-    }
-}
-
-@Composable
-fun AddNoteScreen(categoryId: Int?, onNoteAdded: () -> Unit) {
-    Box(Modifier.fillMaxSize()) {
-        Text("Добавить заметку в категорию: $categoryId", modifier = Modifier.align(Alignment.Center))
     }
 }
 
@@ -119,6 +89,6 @@ fun ArchiveScreen() {
 @PreviewPhone
 private fun TodoListPreview() {
     TodoTheme {
-        TodoListContent()
+        TodoListContent(onAddNoteClick = {})
     }
 }

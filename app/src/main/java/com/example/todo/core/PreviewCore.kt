@@ -6,6 +6,7 @@ import androidx.compose.ui.tooling.preview.Preview
     name = "Phone light",
     group = "Phone",
     device = "spec:width=411dp,height=891dp",
-    locale = "ru"
+    locale = "ru",
+    showBackground = true
 )
 annotation class PreviewPhone
