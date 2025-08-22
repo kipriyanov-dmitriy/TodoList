@@ -14,12 +14,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 
 @Composable
-fun DescriptionTextField() {
+fun DescriptionTextField(
+    onDescriptionValueChange: (String) -> Unit,
+) {
     var text by rememberSaveable { mutableStateOf("") }
     var isError by rememberSaveable { mutableStateOf(false) }
     val charLimit = 300
     var currentLength by rememberSaveable { mutableIntStateOf(0) }
-
 
     OutlinedTextField(
         modifier = Modifier
@@ -30,7 +31,10 @@ fun DescriptionTextField() {
         onValueChange = {
             currentLength = it.length
             isError = currentLength > charLimit
-            if (!isError) text = it
+            if (!isError) {
+                text = it
+                onDescriptionValueChange(it)
+            }
         },
         label = {
             Text(if (isError) "Описание*" else "Описание")
@@ -46,12 +50,13 @@ fun DescriptionTextField() {
 }
 
 @Composable
-fun TitleTextField() {
+fun TitleTextField(
+    onTitleValueChange: (String) -> Unit,
+) {
     var text by rememberSaveable { mutableStateOf("") }
     var isError by rememberSaveable { mutableStateOf(false) }
     val charLimit = 30
     var currentLength by rememberSaveable { mutableIntStateOf(0) }
-
 
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth(),
@@ -60,7 +65,10 @@ fun TitleTextField() {
         onValueChange = {
             currentLength = it.length
             isError = currentLength > charLimit
-            if (!isError) text = it
+            if (!isError){
+                text = it
+                onTitleValueChange(it)
+            }
         },
         label = {
             Text(if (isError) "Заголовок*" else "Заголовок")

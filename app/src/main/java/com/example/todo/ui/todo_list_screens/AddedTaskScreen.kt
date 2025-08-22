@@ -15,28 +15,40 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.todo.core.PreviewPhone
 import com.example.todo.ui.components.AcceptButton
-import com.example.todo.ui.components.AddedNoteDate
+import com.example.todo.ui.components.AddedCreateTaskDate
 import com.example.todo.ui.components.DescriptionTextField
 import com.example.todo.ui.components.PriorityItem
 import com.example.todo.ui.components.TitleTextField
+import com.example.todo.ui.contract.AddedTaskContract
+import com.example.todo.ui.contract.AddedTaskContract.Intent.OnCreateTask
 import com.example.todo.ui.theme.TodoTheme
-
-@Composable
-fun AddNoteScreen(onNoteAdded: () -> Unit) {
-    AddedNoteContent(
-        onBackPressed = onNoteAdded
-    )
-}
+import com.example.todo.ui.todo_list_screens.viewmodels.AddedTaskViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddedNoteContent(
+fun AddTaskScreen(
     onBackPressed: () -> Unit,
-){
+) {
+    val viewModel: AddedTaskViewModel = koinViewModel()
+    val sendIntent by remember { mutableStateOf(viewModel::handleIntent) }
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when(effect){
+                AddedTaskContract.Effect.OnTaskCreated -> {
+                    onBackPressed()
+                }
+            }
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -60,14 +72,20 @@ private fun AddedNoteContent(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            TitleTextField()
-            DescriptionTextField()
-            PriorityItem { priority ->
-                //TODO(Затолкать приоритет в стейт когда он появится, чтоб прокинуть в БД)
+            TitleTextField { title ->
+                sendIntent(AddedTaskContract.Intent.OnTitleValueChange(title))
             }
-            AddedNoteDate()
+            DescriptionTextField { description ->
+                sendIntent(AddedTaskContract.Intent.OnDescriptionValueChange(description))
+            }
+            PriorityItem { priority ->
+                sendIntent(AddedTaskContract.Intent.OnPriorityValueChange(priority))
+            }
+            AddedCreateTaskDate { localDate ->
+                sendIntent(AddedTaskContract.Intent.OnDeadlineDateValueChange(localDate))
+            }
             AcceptButton {
-                //TODO(Реакция на клик кнопки сохранить, кладём в БД заметку)
+                sendIntent(OnCreateTask)
             }
         }
     }
@@ -75,8 +93,8 @@ private fun AddedNoteContent(
 
 @Composable
 @PreviewPhone
-private fun AddNoteScreenPreview() {
+private fun AddTaskScreenPreview() {
     TodoTheme {
-        AddNoteScreen {}
+        AddTaskScreen {}
     }
 }

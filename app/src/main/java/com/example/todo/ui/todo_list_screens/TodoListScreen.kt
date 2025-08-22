@@ -10,6 +10,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,26 +21,39 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.example.todo.core.PreviewPhone
 import com.example.todo.ui.components.TodoTopAppBar
+import com.example.todo.ui.contract.BacklogContract
+import com.example.todo.ui.model.TaskUiModel
 import com.example.todo.ui.model.BottomTab
 import com.example.todo.ui.model.bottomTabs
 import com.example.todo.ui.theme.TodoTheme
+import com.example.todo.ui.todo_list_screens.viewmodels.TodoListViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun TodoListScreen(
-    onAddNoteClick: () -> Unit
+    selectedTab: BottomTab,
+    onAddNoteClick: () -> Unit,
 ) {
     val viewModel: TodoListViewModel = koinViewModel()
-
-    TodoListContent(onAddNoteClick = onAddNoteClick)
+    val viewState by viewModel.viewState.collectAsState()
+    val sendIntent by remember { mutableStateOf(viewModel::handleIntent) }
+    TodoListContent(
+        viewState = viewState,
+        selectedTab = selectedTab,
+        onAddNoteClick = onAddNoteClick,
+        sendIntent = sendIntent
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TodoListContent(
-    onAddNoteClick: () -> Unit
+    viewState: TaskUiModel,
+    selectedTab: BottomTab = BottomTab.InProgress,
+    onAddNoteClick: () -> Unit,
+    sendIntent: (BacklogContract.Intent) -> Unit,
 ) {
-    var selectedTab by remember { mutableStateOf<BottomTab>(BottomTab.InProgress) }
+    var selectedTab by remember { mutableStateOf(selectedTab) }
 
     Scaffold(
         topBar = {
@@ -63,18 +77,15 @@ private fun TodoListContent(
     ) { innerPadding ->
         Box(Modifier.padding(innerPadding)) {
             when (selectedTab) {
-                BottomTab.InProgress -> InProgressScreen()
-                BottomTab.Backlog -> BacklogScreen(onAddNoteClick = onAddNoteClick)
+                BottomTab.InProgress -> InProgressContent()
+                BottomTab.Backlog -> BacklogContent(
+                    state = viewState,
+                    onAddNoteClick = onAddNoteClick,
+                    sendIntent = sendIntent
+                )
                 BottomTab.Archive -> ArchiveScreen()
             }
         }
-    }
-}
-
-@Composable
-fun InProgressScreen() {
-    Box(Modifier.fillMaxSize()) {
-        Text("Экран В работе", modifier = Modifier.align(Alignment.Center))
     }
 }
 
@@ -89,6 +100,6 @@ fun ArchiveScreen() {
 @PreviewPhone
 private fun TodoListPreview() {
     TodoTheme {
-        TodoListContent(onAddNoteClick = {})
+//        TodoListContent(onAddNoteClick = {})
     }
 }

@@ -28,7 +28,9 @@ import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddedNoteDate() {
+fun AddedCreateTaskDate(
+    onDateSelected: (LocalDate) -> Unit,
+) {
     var date by rememberSaveable { mutableStateOf(TodoDateUtils.formatDate(TodoDateUtils.today())) }
     var showDatePicker by remember { mutableStateOf(false) }
 
@@ -76,6 +78,7 @@ fun AddedNoteDate() {
                             .atZone(ZoneId.systemDefault())
                             .toLocalDate()
                         date = TodoDateUtils.formatDate(localDate)
+                        onDateSelected(localDate)
                     }
                     showDatePicker = false
                 }) {

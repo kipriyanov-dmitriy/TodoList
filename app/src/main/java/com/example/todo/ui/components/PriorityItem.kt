@@ -17,9 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.todo.domain.model.BusinessPriority
 import com.example.todo.ui.theme.Green
 import com.example.todo.ui.theme.Green50
-import com.example.todo.ui.theme.Purple80
 import com.example.todo.ui.theme.Red
 import com.example.todo.ui.theme.Red50
 import com.example.todo.ui.theme.Yellow
@@ -33,6 +33,13 @@ enum class Priority(
     Medium(Yellow50, Yellow),
     High(Red50, Red),
 }
+
+fun BusinessPriority.getPriority(): Priority =
+    when(this){
+        BusinessPriority.LOW -> Priority.Low
+        BusinessPriority.MEDIUM -> Priority.Medium
+        BusinessPriority.HIGH -> Priority.High
+    }
 
 @Composable
 fun PriorityItem(
@@ -66,9 +73,9 @@ fun PriorityItem(
 }
 
 @Composable
-private fun PriorityChip(
+fun PriorityChip(
     priority: Priority,
-    selected: Boolean,
+    selected: Boolean = false,
     onClick: () -> Unit
 ) {
     InputChip(
