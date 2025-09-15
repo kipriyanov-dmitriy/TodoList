@@ -7,7 +7,7 @@ import com.example.todo.domain.model.StorageStatus
 import java.time.Instant
 import java.time.ZoneId
 
-fun TaskItemEntity.toBacklogTaskItem(): TaskItem {
+fun TaskItemEntity.toTaskItem(): TaskItem {
     val date = Instant.ofEpochMilli(this.dateOfCreate)
         .atZone(ZoneId.systemDefault())
         .toLocalDate()
@@ -16,8 +16,8 @@ fun TaskItemEntity.toBacklogTaskItem(): TaskItem {
         title = title,
         description = description,
         dateOfCreate = date,
-        businessPriority = BusinessPriority.entries[priority],
-        storageStatus = StorageStatus.entries[storageStatus]
+        businessPriority = priority,
+        storageStatus = storageStatus
     )
 }
 
@@ -29,7 +29,7 @@ fun TaskItem.toTaskItemEntity(): TaskItemEntity {
         title = title,
         description = description,
         dateOfCreate = date,
-        priority = businessPriority.ordinal,
-        storageStatus = storageStatus.ordinal
+        priority = businessPriority,
+        storageStatus = storageStatus
     )
 }

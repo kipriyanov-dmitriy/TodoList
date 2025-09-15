@@ -36,7 +36,7 @@ fun TodoListScreen(
 ) {
     val viewModel: TodoListViewModel = koinViewModel()
     val viewState by viewModel.viewState.collectAsState()
-    val sendIntent by remember { mutableStateOf(viewModel::handleIntent) }
+    val sendIntent = remember(viewModel) { viewModel::handleIntent }
     TodoListContent(
         viewState = viewState,
         selectedTab = selectedTab,
@@ -77,7 +77,10 @@ private fun TodoListContent(
     ) { innerPadding ->
         Box(Modifier.padding(innerPadding)) {
             when (selectedTab) {
-                BottomTab.InProgress -> InProgressContent()
+                BottomTab.InProgress -> InProgressContent(
+                    state = viewState,
+                    sendIntent = sendIntent
+                )
                 BottomTab.Backlog -> BacklogContent(
                     state = viewState,
                     onAddNoteClick = onAddNoteClick,

@@ -1,74 +1,61 @@
 package com.example.todo.ui.todo_list_screens.viewmodels
 
 import com.example.todo.core.CoroutineViewModel
-import com.example.todo.core.TodoDateUtils
-import com.example.todo.domain.usecases.GetListOfBacklogTasksUseCase
-import com.example.todo.ui.components.getPriority
+import com.example.todo.domain.model.StorageStatus
+import com.example.todo.domain.usecases.ChangeTaskStatusUseCase
+import com.example.todo.domain.usecases.GetListOfTasksUseCase
 import com.example.todo.ui.contract.BacklogContract.Intent
-import com.example.todo.ui.contract.BacklogContract.Intent.OnItemRemove
-import com.example.todo.ui.contract.BacklogContract.Intent.OnAddedTask
+import com.example.todo.ui.contract.BacklogContract.Intent.OnTransferringItemInWorkTab
 import com.example.todo.ui.model.TaskItemUiModel
 import com.example.todo.ui.model.TaskUiModel
+import com.example.todo.ui.model.toTaskItemUiModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class TodoListViewModel(
-    private val getListOfBacklogTasksUseCase: GetListOfBacklogTasksUseCase,
+    private val getListOfTasksUseCase: GetListOfTasksUseCase,
+    private val changeTaskStatusUseCase: ChangeTaskStatusUseCase,
 ) : CoroutineViewModel() {
-    private val _viewState: MutableStateFlow<TaskUiModel> = MutableStateFlow(
-        TaskUiModel(listOfTasks = emptyList())
-    )
+    private val _viewState: MutableStateFlow<TaskUiModel> = MutableStateFlow(TaskUiModel())
     val viewState: StateFlow<TaskUiModel> = _viewState.asStateFlow()
 
     init {
-        updateBacklogList()
+        launch(Dispatchers.IO) {
+            getListOfTasksUseCase.invoke().collect { tasks ->
+                _viewState.value = TaskUiModel(
+                    inProgressListOfTasks = tasks.filter { it.storageStatus == StorageStatus.IN_PROGRESS }
+                        .map { it.toTaskItemUiModel() },
+                    backlogListOfTasks = tasks.filter { it.storageStatus == StorageStatus.BACKLOG }
+                        .map { it.toTaskItemUiModel() },
+                    archiveListOfTasks = tasks.filter { it.storageStatus == StorageStatus.ARCHIVE }
+                        .map { it.toTaskItemUiModel() }
+                )
+            }
+        }
     }
 
     fun handleIntent(intent: Intent) {
         when (intent) {
-            is OnItemRemove -> {
-                onItemRemove(intent.item)
+            is OnTransferringItemInWorkTab -> {
+                onTransferringItemInWork(intent.item)
             }
 
-            is OnAddedTask -> {
-                onAddedTask(intent.item)
-            }
-
-            Intent.UpdateBacklogList -> {
-                updateBacklogList()
+            is Intent.OnTransferringItemArchive -> {
+                onTransferringItemArchive(intent.item)
             }
         }
     }
 
-    private fun updateBacklogList() {
+    private fun onTransferringItemArchive(item: TaskItemUiModel) {
+        launch { changeTaskStatusUseCase.invoke(item.id, StorageStatus.ARCHIVE) }
+    }
+
+    private fun onTransferringItemInWork(item: TaskItemUiModel) {
         launch {
-            val list = getListOfBacklogTasksUseCase.invoke().map { item ->
-                TaskItemUiModel(
-                    id = item.id,
-                    title = item.title,
-                    description = item.description,
-                    dateOfCreate = TodoDateUtils.formatDate(item.dateOfCreate),
-                    priority = item.businessPriority.getPriority(),
-                    storageStatus = item.storageStatus
-                )
-            }
-
-            _viewState.update {
-                it.copy(
-                    listOfTasks = list
-                )
-            }
+            changeTaskStatusUseCase.invoke(item.id, StorageStatus.IN_PROGRESS)
         }
-    }
-
-    private fun onAddedTask(item: TaskItemUiModel) {
-
-    }
-
-    private fun onItemRemove(item: TaskItemUiModel) {
-
     }
 }

@@ -2,8 +2,10 @@ package com.example.todo.ui.model
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.example.todo.R
+import com.example.todo.core.TodoDateUtils
 import com.example.todo.domain.model.TaskItem
 import com.example.todo.domain.model.BusinessPriority
 import com.example.todo.domain.model.StorageStatus
@@ -49,6 +51,14 @@ val bottomTabs = listOf(
 )
 
 //ui стейты
+@Immutable
+data class TaskUiModel(
+    val inProgressListOfTasks: List<TaskItemUiModel> = emptyList(),
+    val backlogListOfTasks: List<TaskItemUiModel> = emptyList(),
+    val archiveListOfTasks: List<TaskItemUiModel> = emptyList(),
+)
+
+@Immutable
 data class AddedTaskUiModel(
     val title: String = EMPTY_STRING,
     val description: String = EMPTY_STRING,
@@ -56,11 +66,7 @@ data class AddedTaskUiModel(
     val priority: Priority = Priority.Low,
 )
 
-@Stable
-data class TaskUiModel(
-    val listOfTasks: List<TaskItemUiModel>,
-)
-
+@Immutable
 data class TaskItemUiModel(
     val id: Long,
     val title: String,
@@ -71,6 +77,7 @@ data class TaskItemUiModel(
 )
 
 //маперы
+//в домен модели
 fun TaskItemUiModel.toTaskItem() =
     TaskItem(
         id = id,
@@ -87,4 +94,15 @@ fun AddedTaskUiModel.toTaskItem() =
         description = description,
         dateOfCreate = dateOfCreate,
         businessPriority = BusinessPriority.entries[priority.ordinal]
+    )
+
+//в ui модели
+fun TaskItem.toTaskItemUiModel() =
+    TaskItemUiModel(
+        id = id,
+        title = title,
+        description = description,
+        dateOfCreate = TodoDateUtils.formatDate(dateOfCreate),
+        priority = Priority.entries[businessPriority.ordinal],
+        storageStatus = storageStatus
     )

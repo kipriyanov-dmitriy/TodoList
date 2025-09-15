@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -31,7 +32,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -42,11 +46,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.wear.compose.foundation.edgeSwipeToDismiss
 import androidx.wear.compose.material.ExperimentalWearMaterialApi
 import androidx.wear.compose.material.FractionalThreshold
 import androidx.wear.compose.material.rememberSwipeableState
 import androidx.wear.compose.material.swipeable
 import com.example.todo.core.PreviewPhone
+import com.example.todo.core.onSizeMeasuredDp
 import com.example.todo.domain.model.StorageStatus
 import com.example.todo.theme.Typography
 import com.example.todo.ui.model.TaskItemUiModel
@@ -69,6 +75,8 @@ fun TaskItem(
     onLongClick: () -> Unit = {},
     onTransferringSwipe: () -> Unit = {},
 ) {
+    var itemHeight by remember { mutableStateOf(0.dp) }
+
     //стейт свайпа
     val swipeableState = rememberSwipeableState(CardSwipeState.Start)
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
@@ -96,18 +104,21 @@ fun TaskItem(
             visibleState.targetState = false
         }
     }
+
     AnimatedVisibility(
         visibleState = visibleState,
         exit = shrinkVertically(
             animationSpec = tween(300),
             shrinkTowards = Alignment.Top
         ) + fadeOut(),
-
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
+                .padding(8.dp)
+                .onSizeMeasuredDp { _, height ->
+                    itemHeight = height - 16.dp
+                },
             contentAlignment = Alignment.CenterStart
         ) {
             when {
@@ -143,7 +154,7 @@ fun TaskItem(
                     Box(
                         modifier = Modifier
                             .matchParentSize()
-                            .background(Blue),
+                            .background(color = Blue, shape = RoundedCornerShape(8.dp)),
                         contentAlignment = Alignment.CenterEnd
                     ) {
                         Text(
@@ -155,7 +166,6 @@ fun TaskItem(
                     }
                 }
             }
-
 
             Card(
                 modifier = Modifier
@@ -192,7 +202,10 @@ fun TaskItem(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    PriorityStatusMark(state = state.priority)
+                    PriorityStatusMark(
+                        state = state.priority,
+                        modifier = Modifier.height(itemHeight)
+                    )
                     Column(
                         modifier = Modifier
                     ) {
@@ -202,7 +215,7 @@ fun TaskItem(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "deadline: ${state.dateOfCreate}",
+                                text = "срок: ${state.dateOfCreate}",
                                 style = Typography.labelSmall
                             )
                         }
@@ -225,7 +238,7 @@ fun TaskItem(
     }
 
     LaunchedEffect(visibleState.currentState, visibleState.isIdle) {
-        if (!visibleState.currentState && visibleState.isIdle){
+        if (!visibleState.currentState && visibleState.isIdle) {
             onTransferringSwipe()
         }
     }
@@ -245,7 +258,6 @@ fun PriorityStatusMark(
     Box(
         modifier = modifier
             .width(8.dp)
-            .height(58.dp)
             .background(backgroundColor)
     )
 }

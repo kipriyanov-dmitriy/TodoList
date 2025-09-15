@@ -108,11 +108,10 @@ jobs:
           CHAT_ID: ${{ secrets.TELEGRAM_CHAT1 }}
         run: |
           if [ -f "${{ steps.find_apk.outputs.apk_path }}" ]; then
-            COMMIT_MSG="${{ github.event.head_commit.message }}"
             echo "Sending APK to first chat..."
             curl -F chat_id=$CHAT_ID \
                  -F document=@"${{ steps.find_apk.outputs.apk_path }}" \
-                 -F caption="🚀 New APK Build - $(date '+%Y-%m-%d %H:%M:%S')\n📝 Changes:\n"$COMMIT_MSG" \
+                 -F caption="🚀 New APK Build - $(date '+%Y-%m-%d %H:%M:%S')" \
                  "https://api.telegram.org/bot$BOT_TOKEN/sendDocument"
           else
             echo "APK file not found!"
@@ -125,11 +124,10 @@ jobs:
           CHAT_ID: ${{ secrets.TELEGRAM_CHAT2 }}
         run: |
           if [ -f "${{ steps.find_apk.outputs.apk_path }}" ]; then
-            COMMIT_MSG="${{ github.event.head_commit.message }}"
             echo "Sending APK to second chat..."
             curl -F chat_id=$CHAT_ID \
                  -F document=@"${{ steps.find_apk.outputs.apk_path }}" \
-                 -F caption="🚀 New APK Build - $(date '+%Y-%m-%d %H:%M:%S')\n📝 Changes:\n"$COMMIT_MSG" \
+                 -F caption="🚀 New APK Build - $(date '+%Y-%m-%d %H:%M:%S')" \
                  "https://api.telegram.org/bot$BOT_TOKEN/sendDocument"
           else
             echo "APK file not found!"

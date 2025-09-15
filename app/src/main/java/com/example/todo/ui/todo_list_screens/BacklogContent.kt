@@ -10,7 +10,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,16 +32,14 @@ fun BacklogContent(
     sendIntent: (BacklogContract.Intent) -> Unit,
     onAddNoteClick: () -> Unit,
 ) {
-    LaunchedEffect(Unit) {
-        sendIntent(BacklogContract.Intent.UpdateBacklogList)
-    }
     Box(Modifier.fillMaxSize()) {
+        println(state.backlogListOfTasks)
         LazyColumn {
-            items(items = state.listOfTasks, key = { it.id }) { item ->
+            items(items = state.backlogListOfTasks, key = { it.id }) { item ->
                 TaskItem(
                     state = item,
                     onTransferringSwipe = {
-                        sendIntent(BacklogContract.Intent.OnItemRemove(item))
+                        sendIntent(BacklogContract.Intent.OnTransferringItemInWorkTab(item))
                     }
                 )
             }
@@ -78,7 +75,7 @@ private fun BacklogScreenPreview() {
         }
         BacklogContent(
             state = TaskUiModel(
-                listOfTasks = list
+                backlogListOfTasks = list
             ),
             sendIntent = {}
         ) { }

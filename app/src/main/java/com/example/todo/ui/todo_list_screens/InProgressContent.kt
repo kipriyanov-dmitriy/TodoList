@@ -2,14 +2,29 @@ package com.example.todo.ui.todo_list_screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.example.todo.ui.components.TaskItem
+import com.example.todo.ui.contract.BacklogContract
+import com.example.todo.ui.model.TaskUiModel
 
 @Composable
-fun InProgressContent() {
+fun InProgressContent(
+    state: TaskUiModel,
+    sendIntent: (BacklogContract.Intent) -> Unit,
+) {
     Box(Modifier.fillMaxSize()) {
-        Text("Экран В работе", modifier = Modifier.align(Alignment.Center))
+        LazyColumn {
+            items(items = state.inProgressListOfTasks, key = { it.id }) { item ->
+                TaskItem(
+                    state = item,
+                    onTransferringSwipe = {
+                        sendIntent(BacklogContract.Intent.OnTransferringItemArchive(item))
+                    }
+                )
+            }
+        }
     }
 }

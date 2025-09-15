@@ -3,9 +3,8 @@ package com.example.todo.ui.contract
 import com.example.todo.ui.model.TaskItemUiModel
 
 class BacklogContract {
-    interface Intent {
-        data class OnItemRemove(val item: TaskItemUiModel) : Intent
-        data class OnAddedTask(val item: TaskItemUiModel) : Intent
-        data object UpdateBacklogList: Intent
+    sealed interface Intent {
+        data class OnTransferringItemInWorkTab(val item: TaskItemUiModel) : Intent
+        data class OnTransferringItemArchive(val item: TaskItemUiModel) : Intent
     }
 }
