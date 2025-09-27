@@ -9,7 +9,7 @@ class AddedTaskContract {
         data class OnTitleValueChange(val value: String) : Intent
         data class OnDescriptionValueChange(val value: String) : Intent
         data class OnPriorityValueChange(val priority: Priority) : Intent
-        data class OnDeadlineDateValueChange(val date: LocalDate) : Intent
+        data class OnDeadlineDateValueChange(val date: LocalDate?) : Intent
     }
 
     sealed interface Effect {

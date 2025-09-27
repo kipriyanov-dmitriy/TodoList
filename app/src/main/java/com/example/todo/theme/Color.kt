@@ -18,4 +18,5 @@ val Red = Color(0xFFCF0000)
 val Yellow = Color(0xFFCFBA00)
 val Green = Color(0xFF00CF00)
 
-val Blue = Color(0xFF1565C0)
+val Blue = Color(0xFF4FC3F7)
+val Orange = Color(0xFFFF8A65)

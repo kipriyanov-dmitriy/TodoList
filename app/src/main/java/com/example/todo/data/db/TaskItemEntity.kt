@@ -11,7 +11,7 @@ data class TaskItemEntity(
     val id: Long = 0,
     val title: String,
     val description: String,
-    val dateOfCreate: Long,
+    val deadlineDate: Long?,
     val priority: BusinessPriority,
     val parentId: Long? = null,
     val storageStatus: StorageStatus,

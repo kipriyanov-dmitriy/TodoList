@@ -96,6 +96,9 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.paging)
     implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.animation.graphics)
+    implementation(libs.androidx.foundation)
+    implementation(libs.androidx.lifecycle.process)
     ksp(libs.room.compiler)
 
     //DI

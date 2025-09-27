@@ -3,4 +3,6 @@
     <string name="in_work">В работе</string>
     <string name="backlog">Бэклог</string>
     <string name="archive">Архив</string>
+    <string name="wallpaper_label">Todo Wallpaper</string>
+    <string name="wallpaper_description">Обои со списком текущих задач</string>
 </resources>

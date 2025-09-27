@@ -4,8 +4,8 @@ import com.example.todo.core.CoroutineViewModel
 import com.example.todo.domain.model.StorageStatus
 import com.example.todo.domain.usecases.ChangeTaskStatusUseCase
 import com.example.todo.domain.usecases.GetListOfTasksUseCase
-import com.example.todo.ui.contract.BacklogContract.Intent
-import com.example.todo.ui.contract.BacklogContract.Intent.OnTransferringItemInWorkTab
+import com.example.todo.ui.contract.TodoListContract.Intent
+import com.example.todo.ui.contract.TodoListContract.Intent.OnTransferringItemInWorkTab
 import com.example.todo.ui.model.TaskItemUiModel
 import com.example.todo.ui.model.TaskUiModel
 import com.example.todo.ui.model.toTaskItemUiModel
@@ -46,16 +46,24 @@ class TodoListViewModel(
             is Intent.OnTransferringItemArchive -> {
                 onTransferringItemArchive(intent.item)
             }
+
+            is Intent.OnTransferringItemBacklog -> {
+                onTransferringItemBacklog(intent.item)
+            }
         }
     }
 
+    private fun onTransferringItemBacklog(item: TaskItemUiModel) {
+        launch { changeTaskStatusUseCase(item.id, StorageStatus.BACKLOG) }
+    }
+
     private fun onTransferringItemArchive(item: TaskItemUiModel) {
-        launch { changeTaskStatusUseCase.invoke(item.id, StorageStatus.ARCHIVE) }
+        launch { changeTaskStatusUseCase(item.id, StorageStatus.ARCHIVE) }
     }
 
     private fun onTransferringItemInWork(item: TaskItemUiModel) {
         launch {
-            changeTaskStatusUseCase.invoke(item.id, StorageStatus.IN_PROGRESS)
+            changeTaskStatusUseCase(item.id, StorageStatus.IN_PROGRESS)
         }
     }
 }

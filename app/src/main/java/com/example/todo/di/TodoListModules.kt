@@ -25,9 +25,7 @@ val databaseModule = module {
             get(),
             TaskDatabase::class.java,
             "tasks.db"
-        )
-            .fallbackToDestructiveMigration(true)
-            .build()
+        ).build()
     }
     single { get<TaskDatabase>().tasksDao() }
     single<ITodoListRepository> { TodoListRepositoryImpl(get()) }

@@ -6,7 +6,7 @@ data class TaskItem(
     val id: Long = 0,
     val title: String,
     val description: String,
-    val dateOfCreate: LocalDate,
+    val deadlineDate: LocalDate?,
     val businessPriority: BusinessPriority,
     val storageStatus: StorageStatus = StorageStatus.BACKLOG,
 )

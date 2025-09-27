@@ -30,7 +30,7 @@ class AddedTaskViewModel(
             }
 
             is Intent.OnDeadlineDateValueChange -> {
-                state.value = state.value.copy(dateOfCreate = intent.date)
+                state.value = state.value.copy(deadlineDate = intent.date)
             }
 
             is Intent.OnDescriptionValueChange -> {

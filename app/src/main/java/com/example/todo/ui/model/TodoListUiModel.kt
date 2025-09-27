@@ -3,7 +3,6 @@ package com.example.todo.ui.model
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
 import com.example.todo.R
 import com.example.todo.core.TodoDateUtils
 import com.example.todo.domain.model.TaskItem
@@ -62,7 +61,7 @@ data class TaskUiModel(
 data class AddedTaskUiModel(
     val title: String = EMPTY_STRING,
     val description: String = EMPTY_STRING,
-    val dateOfCreate: LocalDate = LocalDate.now(),
+    val deadlineDate: LocalDate? = null,
     val priority: Priority = Priority.Low,
 )
 
@@ -71,7 +70,7 @@ data class TaskItemUiModel(
     val id: Long,
     val title: String,
     val description: String,
-    val dateOfCreate: String,
+    val deadlineDate: String,
     val priority: Priority,
     val storageStatus: StorageStatus
 )
@@ -83,7 +82,7 @@ fun TaskItemUiModel.toTaskItem() =
         id = id,
         title = title,
         description = description,
-        dateOfCreate = LocalDate.now(),
+        deadlineDate = LocalDate.now(),
         businessPriority = BusinessPriority.entries[priority.ordinal],
         storageStatus = storageStatus
     )
@@ -92,17 +91,23 @@ fun AddedTaskUiModel.toTaskItem() =
     TaskItem(
         title = title,
         description = description,
-        dateOfCreate = dateOfCreate,
+        deadlineDate = deadlineDate,
         businessPriority = BusinessPriority.entries[priority.ordinal]
     )
 
 //в ui модели
-fun TaskItem.toTaskItemUiModel() =
-    TaskItemUiModel(
+fun TaskItem.toTaskItemUiModel(): TaskItemUiModel {
+    val date = if (deadlineDate == null) {
+        "Бессрочно"
+    } else {
+        TodoDateUtils.formatDate(deadlineDate)
+    }
+    return TaskItemUiModel(
         id = id,
         title = title,
         description = description,
-        dateOfCreate = TodoDateUtils.formatDate(dateOfCreate),
+        deadlineDate = date,
         priority = Priority.entries[businessPriority.ordinal],
         storageStatus = storageStatus
     )
+}

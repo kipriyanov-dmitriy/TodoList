@@ -2,7 +2,6 @@ package com.example.todo.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
@@ -10,25 +9,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -46,7 +36,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.wear.compose.foundation.edgeSwipeToDismiss
 import androidx.wear.compose.material.ExperimentalWearMaterialApi
 import androidx.wear.compose.material.FractionalThreshold
 import androidx.wear.compose.material.rememberSwipeableState
@@ -56,14 +45,23 @@ import com.example.todo.core.onSizeMeasuredDp
 import com.example.todo.domain.model.StorageStatus
 import com.example.todo.theme.Typography
 import com.example.todo.ui.model.TaskItemUiModel
-import com.example.todo.ui.theme.Blue
 import com.example.todo.ui.theme.TodoTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
-enum class CardSwipeState { Start, RightPinned, DismissedLeft }
+enum class CardSwipeState { Start, SwipingToRight, SwipingToLeft }
+
+sealed class SwipeConfig {
+    object Disabled : SwipeConfig()
+
+    data class Enabled(
+        val text: String,
+        val backgroundColor: Color,
+        val onSwiped: () -> Unit
+    ) : SwipeConfig()
+}
 
 @OptIn(ExperimentalWearMaterialApi::class)
 @Composable
@@ -73,7 +71,9 @@ fun TaskItem(
     onDeleteClick: () -> Unit = {},
     onAddedSubTaskClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
-    onTransferringSwipe: () -> Unit = {},
+    onVisibilityValueChanged: () -> Boolean = { true },
+    swipeToRight: SwipeConfig = SwipeConfig.Disabled,
+    swipeToLeft: SwipeConfig = SwipeConfig.Disabled,
 ) {
     var itemHeight by remember { mutableStateOf(0.dp) }
 
@@ -81,26 +81,19 @@ fun TaskItem(
     val swipeableState = rememberSwipeableState(CardSwipeState.Start)
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val screenWidthPx = with(LocalDensity.current) { screenWidth.toPx() }
-    val halfWidthScreen = with(LocalDensity.current) { screenWidthPx / 2f }
 
     val visibleState = remember { MutableTransitionState(true) }
 
-    val anchors = mapOf(
-        0f to CardSwipeState.Start,
-        halfWidthScreen to CardSwipeState.RightPinned,
-        -screenWidthPx to CardSwipeState.DismissedLeft
-    )
-
-    //стейт клика
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed = interactionSource.collectIsPressedAsState().value
-    val scale = animateFloatAsState(
-        targetValue = if (isPressed) 0.98f else 1f,
-        label = "scaleAnim"
-    )
+    val anchors = buildMap {
+        put(0f, CardSwipeState.Start)
+        if (swipeToRight is SwipeConfig.Enabled) put(screenWidthPx, CardSwipeState.SwipingToRight)
+        if (swipeToLeft is SwipeConfig.Enabled) put(-screenWidthPx, CardSwipeState.SwipingToLeft)
+    }
 
     LaunchedEffect(swipeableState.currentValue) {
-        if (swipeableState.currentValue == CardSwipeState.DismissedLeft) {
+        if (swipeableState.currentValue == CardSwipeState.SwipingToRight
+            || swipeableState.currentValue == CardSwipeState.SwipingToLeft
+        ) {
             visibleState.targetState = false
         }
     }
@@ -122,43 +115,37 @@ fun TaskItem(
             contentAlignment = Alignment.CenterStart
         ) {
             when {
-                swipeableState.offset.value > 0 -> {
-                    Row(
-                        modifier = Modifier
-                            .width(screenWidth / 2)
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        IconButton(onClick = onDeleteClick) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Удалить",
-                                tint = Blue,
-                                modifier = Modifier
-                                    .size(32.dp)
-                            )
-                        }
-                        IconButton(onClick = onAddedSubTaskClick) {
-                            Icon(
-                                imageVector = Icons.Default.AddCircle,
-                                contentDescription = "Добавить сабтаску",
-                                tint = Blue,
-                                modifier = Modifier
-                                    .size(32.dp)
-                            )
-                        }
-                    }
-                }
-
-                swipeableState.offset.value < 0 -> {
+                swipeableState.offset.value > 0 && swipeToRight is SwipeConfig.Enabled -> {
                     Box(
                         modifier = Modifier
                             .matchParentSize()
-                            .background(color = Blue, shape = RoundedCornerShape(8.dp)),
+                            .background(
+                                color = swipeToRight.backgroundColor,
+                                shape = RoundedCornerShape(8.dp)
+                            ),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Text(
+                            text = swipeToRight.text,
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            modifier = Modifier.padding(start = 24.dp)
+                        )
+                    }
+                }
+
+                swipeableState.offset.value < 0 && swipeToLeft is SwipeConfig.Enabled -> {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(
+                                color = swipeToLeft.backgroundColor,
+                                shape = RoundedCornerShape(8.dp)
+                            ),
                         contentAlignment = Alignment.CenterEnd
                     ) {
                         Text(
-                            text = "В работу",
+                            text = swipeToLeft.text,
                             color = Color.White,
                             fontSize = 20.sp,
                             modifier = Modifier.padding(end = 24.dp)
@@ -170,20 +157,26 @@ fun TaskItem(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .swipeable(
-                        state = swipeableState,
-                        anchors = anchors,
-                        thresholds = { from, to ->
-                            when {
-                                (from == CardSwipeState.Start && to == CardSwipeState.RightPinned) ||
-                                        (from == CardSwipeState.RightPinned && to == CardSwipeState.Start)
-                                    -> FractionalThreshold(.5f)
+                    .then(
+                        if (anchors.size > 1) {
+                            Modifier.swipeable(
+                                state = swipeableState,
+                                anchors = anchors,
+                                thresholds = { from, to ->
+                                    when {
+                                        (from == CardSwipeState.Start && to == CardSwipeState.SwipingToRight) ||
+                                                (from == CardSwipeState.SwipingToRight && to == CardSwipeState.Start)
+                                            -> FractionalThreshold(.5f)
 
-                                else -> FractionalThreshold(.7f)
-                            }
-                        },
-                        orientation = Orientation.Horizontal,
-                        resistance = null
+                                        else -> FractionalThreshold(.7f)
+                                    }
+                                },
+                                orientation = Orientation.Horizontal,
+                                resistance = null
+                            )
+                        } else {
+                            Modifier
+                        }
                     )
                     .offset { IntOffset(swipeableState.offset.value.roundToInt(), 0) },
                 shape = RoundedCornerShape(8.dp)
@@ -192,10 +185,8 @@ fun TaskItem(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp)
-                        .scale(scale.value)
                         .combinedClickable(
-                            interactionSource = interactionSource,
-                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
                             onClick = onClick,
                             onLongClick = onLongClick
                         ),
@@ -215,7 +206,7 @@ fun TaskItem(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "срок: ${state.dateOfCreate}",
+                                text = "срок: ${state.deadlineDate}",
                                 style = Typography.labelSmall
                             )
                         }
@@ -238,8 +229,20 @@ fun TaskItem(
     }
 
     LaunchedEffect(visibleState.currentState, visibleState.isIdle) {
-        if (!visibleState.currentState && visibleState.isIdle) {
-            onTransferringSwipe()
+        val isVisible = !visibleState.currentState && visibleState.isIdle
+        if (isVisible && swipeableState.currentValue == CardSwipeState.SwipingToLeft) {
+            (swipeToLeft as SwipeConfig.Enabled).onSwiped()
+        } else if (isVisible && swipeableState.currentValue == CardSwipeState.SwipingToRight) {
+            (swipeToRight as SwipeConfig.Enabled).onSwiped()
+        }
+    }
+
+    LaunchedEffect(state.storageStatus) {
+        if (swipeableState.currentValue == CardSwipeState.SwipingToRight
+            || swipeableState.currentValue == CardSwipeState.SwipingToLeft
+        ) {
+            visibleState.targetState = onVisibilityValueChanged()
+            swipeableState.snapTo(CardSwipeState.Start)
         }
     }
 }
@@ -274,10 +277,10 @@ private fun TaskItemPreview() {
                 id = Random.nextLong(),
                 title = "title",
                 description = "description description description description description description ",
-                dateOfCreate = date,
+                deadlineDate = date,
                 priority = Priority.Low,
                 storageStatus = StorageStatus.BACKLOG
-            )
+            ),
         )
     }
 }

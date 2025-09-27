@@ -17,10 +17,12 @@ import androidx.compose.ui.unit.dp
 import com.example.todo.core.PreviewPhone
 import com.example.todo.domain.model.StorageStatus
 import com.example.todo.ui.components.Priority
+import com.example.todo.ui.components.SwipeConfig
 import com.example.todo.ui.components.TaskItem
-import com.example.todo.ui.contract.BacklogContract
+import com.example.todo.ui.contract.TodoListContract
 import com.example.todo.ui.model.TaskItemUiModel
 import com.example.todo.ui.model.TaskUiModel
+import com.example.todo.ui.theme.Blue
 import com.example.todo.ui.theme.TodoTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -29,7 +31,7 @@ import kotlin.random.Random
 @Composable
 fun BacklogContent(
     state: TaskUiModel,
-    sendIntent: (BacklogContract.Intent) -> Unit,
+    sendIntent: (TodoListContract.Intent) -> Unit,
     onAddNoteClick: () -> Unit,
 ) {
     Box(Modifier.fillMaxSize()) {
@@ -38,9 +40,13 @@ fun BacklogContent(
             items(items = state.backlogListOfTasks, key = { it.id }) { item ->
                 TaskItem(
                     state = item,
-                    onTransferringSwipe = {
-                        sendIntent(BacklogContract.Intent.OnTransferringItemInWorkTab(item))
-                    }
+                    swipeToLeft = SwipeConfig.Enabled(
+                        text = "В работу",
+                        backgroundColor = Blue,
+                        onSwiped = {
+                            sendIntent(TodoListContract.Intent.OnTransferringItemInWorkTab(item))
+                        }
+                    )
                 )
             }
         }
@@ -68,7 +74,7 @@ private fun BacklogScreenPreview() {
                 id = Random.nextLong(),
                 title = "title_$it",
                 description = "description description description description",
-                dateOfCreate = date,
+                deadlineDate = date,
                 priority = Priority.entries[Random.nextInt(0, 3)],
                 storageStatus = StorageStatus.BACKLOG
             )

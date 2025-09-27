@@ -24,19 +24,18 @@ import com.example.todo.core.TodoDateUtils
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddedCreateTaskDate(
-    onDateSelected: (LocalDate) -> Unit,
+fun DeadlineDateItem(
+    onDateSelected: (LocalDate?) -> Unit,
 ) {
-    var date by rememberSaveable { mutableStateOf(TodoDateUtils.formatDate(TodoDateUtils.today())) }
+    var date: LocalDate? by rememberSaveable { mutableStateOf(null) }
     var showDatePicker by remember { mutableStateOf(false) }
 
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth(),
-        value = date,
+        value = date?.let { TodoDateUtils.formatDate(it) } ?: "Бессрочно",
         label = { Text(text = "Дата") },
         onValueChange = { },
         readOnly = true,
@@ -52,13 +51,8 @@ fun AddedCreateTaskDate(
 
     if (showDatePicker) {
         val today = LocalDate.now()
-        val todayMillis = today
-            .atStartOfDay(ZoneOffset.UTC)
-            .toInstant()
-            .toEpochMilli()
 
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = todayMillis,
             selectableDates = object : SelectableDates {
                 override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                     val pickedDate = Instant.ofEpochMilli(utcTimeMillis)
@@ -72,16 +66,21 @@ fun AddedCreateTaskDate(
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let { millis ->
-                        val localDate = Instant.ofEpochMilli(millis)
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate()
-                        date = TodoDateUtils.formatDate(localDate)
-                        onDateSelected(localDate)
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val localDate = Instant.ofEpochMilli(millis)
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate()
+                            date = localDate
+                            onDateSelected(localDate)
+                        } ?: run {
+                            date = null
+                            onDateSelected(null)
+                        }
+                        showDatePicker = false
                     }
-                    showDatePicker = false
-                }) {
+                ) {
                     Text("OK")
                 }
             },
